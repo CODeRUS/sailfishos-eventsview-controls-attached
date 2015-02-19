@@ -1,0 +1,218 @@
+commit f6e46e52b887849f98194aaac785a23786350910
+Author: CODeRUS <coderusinbox@gmail.com>
+Date:   Wed Dec 24 01:55:57 2014 +0500
+
+    Events view controls remastered for u10
+
+diff --git a/usr/share/lipstick-jolla-home-qt5/eventsview/EventsView.qml b/usr/share/lipstick-jolla-home-qt5/eventsview/EventsView.qml
+index 40b2682..ad86309 100644
+--- a/usr/share/lipstick-jolla-home-qt5/eventsview/EventsView.qml
++++ b/usr/share/lipstick-jolla-home-qt5/eventsview/EventsView.qml
+@@ -13,10 +13,12 @@ import com.jolla.lipstick 0.1
+ import org.nemomobile.configuration 1.0
+ import Sailfish.Accounts 1.0
+ import "../scripts/desktop.js" as Desktop
++import org.nemomobile.transferengine 1.0
+ 
+ ApplicationWindow {
+     id: eventFeedWindow
+     property int animationDuration: Lipstick.compositor.eventsActive ? 200 : 0
++    property TransferModel transferModel: TransferModel {}
+ 
+     cover: undefined
+     enabled: !Desktop.instance.deviceIsLocked
+diff --git a/usr/share/lipstick-jolla-home-qt5/eventsview/EventsView.qml b/usr/share/lipstick-jolla-home-qt5/eventsview/EventsView.qml
+index ad86309..ef87758 100644
+--- a/usr/share/lipstick-jolla-home-qt5/eventsview/EventsView.qml
++++ b/usr/share/lipstick-jolla-home-qt5/eventsview/EventsView.qml
+@@ -135,5 +135,18 @@ ApplicationWindow {
+             target: pageStack
+             onDepthChanged: Lipstick.compositor.eventsSubviewVisible = pageStack.depth > 1
+         }
++
++        onStatusChanged: {
++            if (page.status === PageStatus.Active && pageStack._currentContainer.attachedContainer == null) {
++                pageStack.pushExtra (favoritesControlsPageComponent);
++            }
++        }
++
++        Component {
++            id: favoritesControlsPageComponent
++            Page {
++                FavoritesZoneControls {}
++            }
++        }
+     } }
+ }
+diff --git a/usr/share/jolla-settings/pages/sounds/VolumeSlider.qml b/usr/share/jolla-settings/pages/sounds/VolumeSlider.qml
+index c548c7f..2fc32b7 100644
+--- a/usr/share/jolla-settings/pages/sounds/VolumeSlider.qml
++++ b/usr/share/jolla-settings/pages/sounds/VolumeSlider.qml
+@@ -2,7 +2,7 @@ import QtQuick 2.0
+ import Sailfish.Silica 1.0
+ import com.jolla.settings.system 1.0
+ import org.nemomobile.systemsettings 1.0
+-
++import Sailfish.Ambience 1.0
+ 
+ Slider {
+     id: slider
+@@ -18,7 +18,7 @@ Slider {
+     onValueChanged: profileControl.ringerVolume = value
+     onPressAndHold: cancel()
+ 
+-    ProfileControl {
++    Profile {
+         id: profileControl
+         onRingerVolumeChanged: slider.value = profileControl.ringerVolume
+     }
+diff --git a/usr/share/jolla-settings/pages/mobilenetworking/DataConnection.qml b/usr/share/jolla-settings/pages/mobilenetworking/DataConnection.qml
+index 1017a73..84ccc54 100644
+--- a/usr/share/jolla-settings/pages/mobilenetworking/DataConnection.qml
++++ b/usr/share/jolla-settings/pages/mobilenetworking/DataConnection.qml
+@@ -2,6 +2,7 @@ import QtQuick 2.0
+ import Sailfish.Silica 1.0
+ import MeeGo.QOfono 0.2
+ import MeeGo.Connman 0.2
++import org.nemomobile.configuration 1.0
+ 
+ Item {
+     id: root
+@@ -13,6 +14,11 @@ Item {
+     property int index: -1
+     property bool valid: service.path !== ""
+ 
++    ConfigurationValue {
++        id: subscriberIdentity
++        key: "/apps/jolla-settings/cellular_subscriberidentity"
++    }
++
+     OfonoManager { id: manager }
+ 
+     OfonoConnMan {
+@@ -42,7 +48,7 @@ Item {
+             }
+ 
+             var list = networkFactory.instance.servicesList("cellular")
+-            service.path = root.index < list.length ? list[root.index] : ""
++            service.path = root.index < list.length ? list[root.index] : ("/net/connman/service/cellular_" + subscriberIdentity.value + "_context1")
+ 
+             root.valid = service.path !== ""
+         }
+diff --git a/usr/share/jolla-settings/pages/bluetooth/EnableSwitch.qml b/usr/share/jolla-settings/pages/bluetooth/EnableSwitch.qml
+index f316cda..fff0be1 100644
+--- a/usr/share/jolla-settings/pages/bluetooth/EnableSwitch.qml
++++ b/usr/share/jolla-settings/pages/bluetooth/EnableSwitch.qml
+@@ -3,43 +3,28 @@ import Sailfish.Silica 1.0
+ import Sailfish.Bluetooth 1.0
+ import MeeGo.Connman 0.2
+ 
+-Item {
+-    id: container
+-    height: width
+-
++Switch {
++    id: pwrSwitch
+     property string entryPath
+-    property bool highlighted
+-    property bool checked: pwrSwitch.checked
+-
+-    signal pressAndHold
+-
+-    Switch {
+-        id: pwrSwitch
++    anchors.centerIn: parent
++    icon.source: "image://theme/icon-m-bluetooth"
++    automaticCheck: false
++    checked: btTechModel.powered && adapter.powered
+ 
+-        anchors.centerIn: parent
+-        icon.source: "image://theme/icon-m-bluetooth"
+-        automaticCheck: false
+-        checked: btTechModel.powered && adapter.powered
+-        highlighted: down || container.highlighted
+-
+-        TechnologyModel {
+-            id: btTechModel
+-            name: "bluetooth"
+-        }
++    BluetoothAdapter {
++        id: adapter
++    }
+ 
+-        onCheckedChanged: {
+-            busy = false
+-        }
+-        onClicked: {
+-            btTechModel.powered = !btTechModel.powered
+-            busy = true
+-        }
+-        onPressAndHold: {
+-            container.pressAndHold()
+-        }
++    TechnologyModel {
++        id: btTechModel
++        name: "bluetooth"
+     }
+ 
+-    BluetoothAdapter {
+-        id: adapter
++    onCheckedChanged: {
++        busy = false
++    }
++    onClicked: {
++        btTechModel.powered = !btTechModel.powered
++        busy = true
+     }
+ }
+diff --git a/usr/share/jolla-settings/pages/gps_and_location/LocationSwitch.qml b/usr/share/jolla-settings/pages/gps_and_location/LocationSwitch.qml
+index c340184..b6d7010 100644
+--- a/usr/share/jolla-settings/pages/gps_and_location/LocationSwitch.qml
++++ b/usr/share/jolla-settings/pages/gps_and_location/LocationSwitch.qml
+@@ -3,29 +3,12 @@ import Sailfish.Silica 1.0
+ import MeeGo.Connman 0.2
+ import com.jolla.settings.system 1.0
+ 
+-Item {
+-    id: container
+-    height: width
+-
+-    property string entryPath
+-    property bool highlighted
+-    signal pressAndHold
+-
+-    Switch {
+-        anchors.centerIn: parent
+-        icon.source: "image://theme/icon-m-gps"
+-        automaticCheck: false
+-        checked: locationSettings.locationEnabled && gpsTechModel.powered
+-        highlighted: down || container.highlighted
+-
+-        onClicked: {
+-            var newState = !checked
+-            locationSettings.locationEnabled = newState
+-            gpsTechModel.powered = newState
+-        }
+-
+-        onPressAndHold: container.pressAndHold()
+-    }
++Switch {
++property string entryPath
++    anchors.centerIn: parent
++    icon.source: "image://theme/icon-m-gps"
++    automaticCheck: false
++    checked: locationSettings.locationEnabled && gpsTechModel.powered
+ 
+     TechnologyModel {
+         id: gpsTechModel
+@@ -35,4 +18,10 @@ Item {
+     LocationSettings {
+         id: locationSettings
+     }
++
++    onClicked: {
++        var newState = !checked
++        locationSettings.locationEnabled = newState
++        gpsTechModel.powered = newState
++    }
+ }

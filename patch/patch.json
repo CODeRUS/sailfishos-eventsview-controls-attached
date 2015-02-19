@@ -1,0 +1,8 @@
+{
+    "name": "Eventsview controls attached page",
+    "description": "Eventsview controls attached page activated by left swipe.",
+    "category": "homescreen",
+    "infos": {
+        "maintainer": "coderus"
+    }
+}
