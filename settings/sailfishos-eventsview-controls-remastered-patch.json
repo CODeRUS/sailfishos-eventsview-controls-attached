@@ -6,7 +6,7 @@
             "type": "page",
             "title": "Eventsview controls",
             "translation_id": "sailfishos-eventsview-controls-attached-title",
-            "icon": "/usr/share/patchmanager/icons/icon-m-patchmanager.png",
+            "icon": "/usr/share/jolla-settings/pages/sailfishos-eventsview-controls-attached/icon-m-patchmanager-eventsview-attached-page.png",
             "order": 5000,
             "params": {
                 "source": "/usr/share/jolla-settings/pages/sailfishos-eventsview-controls-attached/main.qml"

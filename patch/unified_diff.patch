@@ -16,23 +16,23 @@ index 40b2682..ad86309 100644
  
  ApplicationWindow {
      id: eventFeedWindow
-     property int animationDuration: Lipstick.compositor.eventsActive ? 200 : 0
+     property int animationDuration: Lipstick.compositor.eventsLayer.active ? 200 : 0
 +    property TransferModel transferModel: TransferModel {}
  
      cover: undefined
      enabled: !Desktop.instance.deviceIsLocked
-diff --git a/usr/share/lipstick-jolla-home-qt5/eventsview/EventsView.qml b/usr/share/lipstick-jolla-home-qt5/eventsview/EventsView.qml
-index ad86309..ef87758 100644
+diff --git a/EventsView.qml b/EventsView.qml
+index ae81dee..8853460 100644
 --- a/usr/share/lipstick-jolla-home-qt5/eventsview/EventsView.qml
 +++ b/usr/share/lipstick-jolla-home-qt5/eventsview/EventsView.qml
-@@ -135,5 +135,18 @@ ApplicationWindow {
+@@ -133,5 +133,18 @@ ApplicationWindow {
              target: pageStack
-             onDepthChanged: Lipstick.compositor.eventsSubviewVisible = pageStack.depth > 1
+             onDepthChanged: Lipstick.compositor.eventsLayer.subviewVisible = pageStack.depth > 1
          }
 +
 +        onStatusChanged: {
 +            if (page.status === PageStatus.Active && pageStack._currentContainer.attachedContainer == null) {
-+                pageStack.pushExtra (favoritesControlsPageComponent);
++                pageStack.pushExtra(favoritesControlsPageComponent);
 +            }
 +        }
 +

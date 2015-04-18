@@ -10,13 +10,14 @@ BuildArch: armv7hl
 # << macros
 
 Summary:    Eventsview controls attached page
-Version:    0.0.1
+Version:    0.0.2
 Release:    1
 Group:      Qt/Qt
 License:    TODO
 Source0:    %{name}-%{version}.tar.bz2
 Requires:   patchmanager
-Requires:   lipstick-jolla-home-qt5 >= 0.24.23.1
+Requires:   lipstick-jolla-home-qt5 >= 0.24.41.3
+Conflicts:  sailfishos-eventsview-controls-remastered-patch
 
 %description
 Eventsview controls attached page activated by left swipe.
@@ -44,6 +45,7 @@ mkdir -p %{buildroot}/usr/share/patchmanager/patches/sailfishos-eventsview-contr
 cp -r patch/* %{buildroot}/usr/share/patchmanager/patches/sailfishos-eventsview-controls-attached
 mkdir -p %{buildroot}/usr/share/jolla-settings/pages/sailfishos-eventsview-controls-attached
 cp -r settings/*.qml %{buildroot}/usr/share/jolla-settings/pages/sailfishos-eventsview-controls-attached
+cp -r settings/*.png %{buildroot}/usr/share/jolla-settings/pages/sailfishos-eventsview-controls-attached
 mkdir -p %{buildroot}/usr/share/jolla-settings/entries
 cp -r settings/*.json %{buildroot}/usr/share/jolla-settings/entries/
 mkdir -p %{buildroot}/usr/share/lipstick-jolla-home-qt5/eventsview
